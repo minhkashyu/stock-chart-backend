@@ -1,8 +1,8 @@
 # Chart the Stock Market
 
-A Free Code Camp Dynamic Web Application Project. A Full Stack Javascript App using Node, Express, MongoDB, React/Redux and Semantic UI with Google Material theme.
+A Free Code Camp Dynamic Web Application Project. A Full Stack Javascript App using Node, Express, MongoDB, Vue.js and Semantic UI with Google Material theme.
 
-This is the React client side of the Fullstack App. The server side can be found at https://github.com/minhkashyu/stock-market-frontend.
+This is the API server side of the Fullstack App. The client side can be found at https://github.com/minhkashyu/stock-market-frontend.
 
 THE APP IS UNDER CONSTRUCTION.
 
