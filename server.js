@@ -1,13 +1,12 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import logger from 'morgan';
 import mongoose from 'mongoose';
 require('dotenv').config({ silent: true });
-
 let app = express();
-app.set('trust proxy', true); // Tell Express to use the remote IP address
+let server = require('http').createServer(app);
+let io = require('socket.io')(server);
+
 const config = require('./config/main').default;
-const router = require('./routes/index').default;
+const stockController = require('./controllers/stock/index').default;
 
 mongoose.Promise = global.Promise;
 mongoose.connect(config.database, {
@@ -20,26 +19,7 @@ mongoose.connect(config.database, {
     console.log('error connecting to db: ' + error);
 });
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-if (app.get('env') === 'production') {
-    app.use(logger('combined'));
-}
-if (app.get('env') === 'development') {
-    app.use(logger('dev'));
-}
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS, HEAD');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Credentials, Media');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    next();
-});
-
-router(app);
-
-let server = app.listen(config.port, err => {
+let appStart = server.listen(config.port, err => {
     if (err) {
         return console.error(err);
     }
@@ -47,6 +27,46 @@ let server = app.listen(config.port, err => {
     console.log('The server is listening on port %s', config.port);
 });
 
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    //send data to client
+    stockController.getStocks((err, stocks) => {
+        if (err) {
+            socket.emit('socketError', err.message);
+        }
+        socket.emit('getStocks', stocks);
+    });
+
+    //get data from client
+    socket.on('addStock', (code) => {
+        stockController.addStock(code, (err, context) => {
+            if (err) {
+                socket.emit('socketError', err.message);
+            }
+            else {
+                io.emit('added', context.newStock);
+            }
+        });
+    });
+
+    //get data from client
+    socket.on('deleteStock', (stockId) => {
+        stockController.deleteStock(stockId, (err, context) => {
+            if (err) {
+                socket.emit('socketError', err.message);
+            }
+            else {
+                socket.broadcast.emit('deleted', context.oldStock);
+            }
+        });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('a user disconnected');
+    })
+});
+
 module.exports = {
-    server: server
+    server: appStart
 };
