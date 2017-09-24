@@ -11,6 +11,23 @@ const validateContext = (context, callback) => {
     callback(null, context);
 };
 
+const checkSymbol = (context, callback) => {
+    Stock.findOne({ symbol: context.symbol })
+        .exec((err, stock) => {
+            if (err) {
+                return callback({
+                    message: 'Cannot add new stock to the database.'
+                });
+            }
+            if (stock) {
+                return callback({
+                    message: `Ticker symbol ${context.symbol} is already added.`
+                });
+            }
+            callback(null, context);
+        });
+};
+
 const addStock = (context, callback) => {
     const stock = new Stock({
         symbol: context.symbol,
@@ -20,29 +37,13 @@ const addStock = (context, callback) => {
     stock.save((err, newStock) => {
         if (err) {
             return callback({
-                message: 'Cannot add new stock to the database'
+                message: 'Cannot add new stock to the database.'
             })
         }
         context.newStock = newStock;
+        context.symbols = [context.symbol];
         callback(null, context);
     });
-};
-
-const checkSymbol = (context, callback) => {
-    Stock.findOne({ symbol: context.symbol })
-        .exec((err, stock) => {
-            if (err) {
-                return callback({
-                    message: 'Cannot add new stock to the database'
-                });
-            }
-            if (stock) {
-                return callback({
-                    message: `Ticket symbol ${context.symbol} is already added.`
-                });
-            }
-            callback(null, context);
-        });
 };
 
 export default (symbol, callback) => {
@@ -53,6 +54,7 @@ export default (symbol, callback) => {
         validateContext,
         googleController.getSymbol,
         checkSymbol,
-        addStock
+        addStock,
+        googleController.getStockData
     ], callback);
 };

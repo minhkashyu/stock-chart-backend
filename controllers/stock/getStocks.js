@@ -1,6 +1,9 @@
+import async from 'async';
 import Stock from './../../models/stock';
+import googleController from './../google/index';
+import _ from 'lodash';
 
-export default callback => {
+const getStocks = (callback) => {
     Stock.find({})
         .exec((err, stocks) => {
             if (err) {
@@ -8,6 +11,19 @@ export default callback => {
                     message: 'Cannot get all stocks.'
                 });
             }
-            callback(null, stocks);
+            callback(null, { stocks });
         });
+};
+
+const getSymbols = (context, callback) => {
+    context.symbols = _.map(context.stocks, 'symbol');
+    callback(null, context);
+};
+
+export default (callback) => {
+    async.waterfall([
+        getStocks,
+        getSymbols,
+        googleController.getStockData
+    ], callback);
 };

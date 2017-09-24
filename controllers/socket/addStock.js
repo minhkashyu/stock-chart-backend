@@ -7,7 +7,10 @@ export default (io, socket) => {
                 socket.emit('socketError', err.message);
             }
             else {
-                io.emit('added', context.newStock);
+                io.emit('added', {
+                    newStock: context.newStock,
+                    chartData: context.chartData
+                });
             }
         });
     });
