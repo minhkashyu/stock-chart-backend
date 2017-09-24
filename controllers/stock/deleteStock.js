@@ -16,7 +16,7 @@ const deleteStock = (context, callback) => {
         .exec((err, stock) => {
             if (err) {
                 return callback({
-                    message: `Stock with ID ${stockId} cannot be found`
+                    message: `Stock with ID ${stockId} cannot be found.`
                 });
             }
 

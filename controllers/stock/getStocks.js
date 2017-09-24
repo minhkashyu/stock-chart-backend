@@ -5,7 +5,7 @@ export default callback => {
         .exec((err, stocks) => {
             if (err) {
                 return callback({
-                    message: 'Cannot get all stocks'
+                    message: 'Cannot get all stocks.'
                 });
             }
             callback(null, stocks);

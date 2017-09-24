@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const StockSchema = new Schema(
     {
-        code: {
+        symbol: {
             type: String,
-            required: true
+            unique : true,
+            required : true,
+            dropDups: true
         },
         name: {
             type: String,

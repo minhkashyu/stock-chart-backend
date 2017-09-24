@@ -1,10 +1,11 @@
 import async from 'async';
 import Stock from './../../models/stock';
+import googleController from './../google/index';
 
 const validateContext = (context, callback) => {
-    if (!context.code) {
+    if (!context.symbol) {
         return callback({
-            message: 'Stock code cannot be empty.'
+            message: 'Ticker symbol cannot be empty.'
         })
     }
     callback(null, context);
@@ -12,8 +13,8 @@ const validateContext = (context, callback) => {
 
 const addStock = (context, callback) => {
     const stock = new Stock({
-        code: context.code,
-        name: context.code + ' Prices, Dividends, Splits and Trading Volume'
+        symbol: context.symbol,
+        name: context.name
     });
 
     stock.save((err, newStock) => {
@@ -27,12 +28,31 @@ const addStock = (context, callback) => {
     });
 };
 
-export default (code, callback) => {
+const checkSymbol = (context, callback) => {
+    Stock.findOne({ symbol: context.symbol })
+        .exec((err, stock) => {
+            if (err) {
+                return callback({
+                    message: 'Cannot add new stock to the database'
+                });
+            }
+            if (stock) {
+                return callback({
+                    message: `Ticket symbol ${context.symbol} is already added.`
+                });
+            }
+            callback(null, context);
+        });
+};
+
+export default (symbol, callback) => {
     async.waterfall([
         async.constant({
-            code
+            symbol
         }),
         validateContext,
+        googleController.getSymbol,
+        checkSymbol,
         addStock
     ], callback);
 };
