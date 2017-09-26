@@ -5,6 +5,7 @@ import _ from 'lodash';
 
 const getStocks = (callback) => {
     Stock.find({})
+        .sort('symbol')
         .exec((err, stocks) => {
             if (err) {
                 return callback({

@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 export default (context, callback) => {
     let TO = moment().format('YYYY-MM-DD');
-    let FROM = moment().subtract(6, 'months').format('YYYY-MM-DD');
+    let FROM = moment().subtract(1, 'years').format('YYYY-MM-DD');
 
     googleFinance.historical({
         symbols: context.symbols,
